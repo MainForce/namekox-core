@@ -1,0 +1,24 @@
+#! -*- coding: utf-8 -*-
+
+# author: forcemain@163.com
+
+
+import logging
+
+
+CONTEXT_CONFIG_KEY = 'CONTEXT'
+
+
+COMMAND_CONFIG_KEY = 'COMMAND'
+
+
+SERVICE_CONFIG_KEY = 'SERVICE'
+
+
+WORKERS_CONFIG_KEY = 'WORKERS'
+DEFAULT_WORKERS_NUMBER = 10
+
+
+LOGGING_CONFIG_KEY = 'LOGGING'
+DEFAULT_LOGGING_LEVEL = logging.DEBUG
+DEFAULT_LOGGING_FORMAT = '%(asctime)s %(levelname)s %(message)s'
