@@ -1,3 +1,8 @@
+# Install
+```shell script
+bash install.sh
+```
+
 ```
 namekox --help
 usage: namekox [-h] [-v] {shell,run,config} ...
