@@ -46,9 +46,9 @@ class Extension(object):
         return obj
 
     def __str__(self):
-        name = '{}.{}'.format(self.__module__, self.__class__.__name__)
+        name = '{}.{}'.format(self.__class__.__module__, self.__class__.__name__)
         return '{}:{}:{}'.format(self.container.service_cls.name, name, self.obj_name)
 
     def __repr__(self):
-        name = '{}.{}'.format(self.__module__, self.__class__.__name__)
+        name = '{}.{}'.format(self.__class__.__module__, self.__class__.__name__)
         return '{}:{}:{}'.format(self.container.service_cls.name, name, self.obj_name)

@@ -6,18 +6,23 @@
 import inspect
 
 
+from logging import getLogger
 from functools import partial
 from types import FunctionType
+from eventlet.event import Event
 
 
 from .extension import Extension
+
+
+logger = getLogger(__name__)
 
 
 class Entrypoint(Extension):
     method_name = None
 
     def __init__(self, *args, **kwargs):
-        pass
+        super(Entrypoint, self).__init__(*args, **kwargs)
 
     def bind(self, container, name):
         ins = super(Entrypoint, self).bind(container, name)
@@ -44,6 +49,23 @@ class Entrypoint(Extension):
 
 
 class EntrypointProvider(Extension):
+    def __init__(self, *args, **kwargs):
+        super(EntrypointProvider, self).__init__(*args, **kwargs)
+        self.entrypoints = set()
+        self.entrypoints_reg = False
+        self.entrypoints_all_stopped_event = Event()
+    
+    def register_entrypoint(self, e):
+        self.entrypoints.add(e)
+        self.entrypoints_reg = True
+    
+    def wait_entrypoints_stop(self):
+        self.entrypoints_reg and self.entrypoints_all_stopped_event.wait()
+
+    def unregister_entrypoint(self, e):
+        self.entrypoints.discard(e)
+        not self.entrypoints and self.entrypoints_all_stopped_event.send(None)
+
     def bind_sub_providers(self, obj, container):
         providers = inspect.getmembers(self, is_entrypoint_provider)
         for name, provider in providers:

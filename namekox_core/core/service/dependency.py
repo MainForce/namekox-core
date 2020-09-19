@@ -12,6 +12,9 @@ from .extension import Extension
 class Dependency(Extension):
     attr_name = None
 
+    def __init__(self, *args, **kwargs):
+        super(Dependency, self).__init__(*args, **kwargs)
+
     def bind(self, container, name):
         ins = super(Dependency, self).bind(container, name)
         ins.attr_name = ins.obj_name

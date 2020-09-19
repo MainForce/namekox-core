@@ -21,7 +21,7 @@ setup(
     author='forcemain',
     url='https://forcemain.github.io/',
     packages=find_packages(exclude=['test', 'test.*']),
-    install_requires=["eventlet>=0.20.1", "pyyaml>=5.1", "six>=1.9.0"],
+    install_requires=["eventlet>=0.27.0", "PyYAML>=5.3.1", "six>=1.15.0"],
     entry_points={'console_scripts': ['namekox=namekox_core.cli.main:main']},
     zip_safe=True,
     license='Apache License, Version 2.0',

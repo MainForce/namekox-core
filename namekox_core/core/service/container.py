@@ -3,9 +3,7 @@
 # author: forcemain@163.com
 
 
-import six
 import sys
-import uuid
 import inspect
 import eventlet
 
@@ -18,64 +16,13 @@ from namekox_core.core.loaders import import_dotpath_class
 from namekox_core.constants import SERVICE_CONFIG_KEY, WORKERS_CONFIG_KEY, DEFAULT_WORKERS_NUMBER
 
 
+from .context import Context
 from .discovery import is_entrypoint
 from .entrypoint import ls_entrypoint_provider
 from .dependency import is_dependency, ls_dependency_provider
 
 
 logger = getLogger(__name__)
-
-
-class WorkerContext(object):
-    _call_id = None
-    _call_id_stack = None
-    _origin_call_id = None
-    _immediate_call_id = None
-    _parent_call_id_stack = None
-
-    def __init__(self, service, entrypoint, args=None, kwargs=None, context=None):
-        self.args = args or ()
-        self.service = service
-        self.kwargs = kwargs or {}
-        self.entrypoint = entrypoint
-        self.context = context or {}
-
-    @property
-    def data(self):
-        data = self.context.copy()
-        data['call_id_stack'] = self.call_id_stack
-        return data
-
-    @property
-    def call_id(self):
-        self._call_id = self._call_id or str(uuid.uuid4())
-        return self._call_id
-
-    @property
-    def call_id_stack(self):
-        if self._call_id_stack is None:
-            self._call_id_stack = []
-            self._call_id_stack.extend(self.parent_call_id_stack)
-            self._call_id_stack.append(self.call_id)
-        return self._call_id_stack
-
-    @property
-    def origin_call_id(self):
-        self._origin_call_id = self._origin_call_id or self.call_id_stack[0]
-        return self._origin_call_id
-    
-    @property
-    def immediate_call_id(self):
-        if self._immediate_call_id is None:
-            stack = self.call_id_stack
-            stack_length = len(stack)
-            self._immediate_call_id = stack[0] if stack_length > 1 else None
-        return self._immediate_call_id
-
-    @property
-    def parent_call_id_stack(self):
-        self._parent_call_id_stack = self._parent_call_id_stack or self.context.pop('call_id_stack', [])
-        return self._parent_call_id_stack
 
 
 class ServiceContainer(object):
@@ -94,7 +41,7 @@ class ServiceContainer(object):
         )
         self.worker_pool = eventlet.GreenPool(self.workers)
 
-        self.shared_extensions = {}
+        self.shared_providers = {}
         self.entrypoints = SpawningProxySet()
         self.dependencies = SpawningProxySet()
 
@@ -192,13 +139,13 @@ class ServiceContainer(object):
     def _kill_worker_threads(self):
         if not self.worker_threads:
             return
-        for gt, _ in six.iteritems(self.worker_threads):
+        for gt, _ in list(self.worker_threads.items()):
             gt.kill()
 
     def _kill_manage_threads(self):
         if not self.manage_threads:
             return
-        for gt, _ in six.iteritems(self.manage_threads):
+        for gt, _ in list(self.manage_threads.items()):
             gt.kill()
 
     def _link_worker_results(self, gt, ctx):
@@ -208,8 +155,12 @@ class ServiceContainer(object):
         self.manage_threads.pop(gt, None)
 
     def spawn_manage_thread(self, fn, args=None, kwargs=None, tid=None):
+        if self.being_kill:
+            msg = 'spawn manage thread prevented due to container being killed'
+            logger.debug(msg)
+            return
         tid, args, kwargs = tid or getattr(fn, '__name__', '<unknown>'), args or (), kwargs or {}
-        gt = eventlet.spawn(fn)
+        gt = eventlet.spawn(fn, *args, **kwargs)
         msg = 'spawn manage thread handle {}:{}:{}(args={}, kwargs={}, tid={})'.format(
             self.service_cls.name, fn.__module__, fn.__name__, args, kwargs, tid
         )
@@ -229,18 +180,20 @@ class ServiceContainer(object):
         except Exception:
             exc_info = sys.exc_info()
         if res_handler is not None:
-            result, exc_info = res_handler(result, exc_info)
+            result, exc_info = res_handler(context, result, exc_info)
         for provider in self.dependencies:
             provider.worker_result(context, result, exc_info)
         for provider in self.dependencies:
             provider.worker_teardown(context)
         del exc_info
 
-    def spawn_worker_thread(self, entrypoint, args, kwargs, ctx_data=None, res_handler=None):   
+    def spawn_worker_thread(self, entrypoint, args, kwargs, ctx_data=None, res_handler=None):
         if self.being_kill:
+            msg = 'spawn worker thread prevented due to container being killed'
+            logger.debug(msg)
             return
         service = self.service_cls()
-        context = WorkerContext(service, entrypoint, args, kwargs, context=ctx_data)
+        context = Context(service, entrypoint, args, kwargs, context=ctx_data)
         msg = 'spawn worker thread handle {}:{}(args={}, kwargs={}, context={})'.format(
             self.service_cls.name, entrypoint.method_name, args, kwargs, ctx_data
         )

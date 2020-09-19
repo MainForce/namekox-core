@@ -61,7 +61,7 @@ class Run(BaseCommand):
     @classmethod
     def main(cls, args, config=None):
         eventlet.monkey_patch()
-        eventlet.debug.hub_exceptions(False)
+        eventlet.debug.hub_exceptions(True)
         eventlet.debug.hub_prevent_multiple_readers(False)
 
         if LOGGING_CONFIG_KEY in config:
@@ -74,7 +74,7 @@ class Run(BaseCommand):
             logger.debug(msg.format(path))
             err, srvs = find_services(path)
             log = False
-            msg += 'failed, '
+            msg += ' failed, '
             if err is not None:
                 log = True
                 msg += err
