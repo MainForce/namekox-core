@@ -7,18 +7,14 @@ import os
 import uuid
 
 
-class Context(object):
+class BaseContext(object):
     _call_id = None
     _call_id_stack = None
     _origin_call_id = None
     _immediate_call_id = None
     _parent_call_id_stack = None
 
-    def __init__(self, service, entrypoint, args=None, kwargs=None, context=None):
-        self.args = args or ()
-        self.service = service
-        self.kwargs = kwargs or {}
-        self.entrypoint = entrypoint
+    def __init__(self, context=None):
         self.context = context or {}
 
     @property
@@ -30,11 +26,7 @@ class Context(object):
     @property
     def call_id(self):
         if self._call_id is None:
-            self._call_id = '{}.{}.{}'.format(
-                self.service.name,
-                self.entrypoint.method_name,
-                str(uuid.UUID(bytes=os.urandom(16), version=4))
-            )
+            self._call_id = str(uuid.UUID(bytes=os.urandom(16), version=4))
         return self._call_id
 
     @property
@@ -64,3 +56,12 @@ class Context(object):
         if self._parent_call_id_stack is None:
             self._parent_call_id_stack = self.context.pop('call_id_stack', [])
         return self._parent_call_id_stack
+
+
+class WorkerContext(BaseContext):
+    def __init__(self, service, entrypoint, args=None, kwargs=None, context=None):
+        self.args = args or ()
+        self.service = service
+        self.kwargs = kwargs or {}
+        self.entrypoint = entrypoint
+        super(WorkerContext, self).__init__(context)

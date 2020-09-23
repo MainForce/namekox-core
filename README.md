@@ -3,8 +3,9 @@
 bash install.sh
 ```
 
+# Usage
+> namekox --help
 ```
-namekox --help
 usage: namekox [-h] [-v] {shell,run,config} ...
 
 positional arguments:

@@ -50,6 +50,10 @@ def is_dependency_provider(obj):
 
 def ls_dependency_provider(obj):
     for name, provider in inspect.getmembers(obj, is_dependency_provider):
-        for name, sub_provider in ls_dependency_provider(provider):
-            yield sub_provider.bind(obj.container, name)
-        yield provider.bind(obj.container, name)
+        for sub_name, sub_provider in ls_dependency_provider(provider):
+            sub_provider_obj = sub_provider.bind(obj.container, sub_name)
+            setattr(provider, sub_name, sub_provider_obj)
+            yield sub_provider_obj
+        provider_obj = provider.bind(obj.container, name)
+        setattr(obj, name, provider_obj)
+        yield provider_obj

@@ -10,9 +10,11 @@ import os
 import sys
 import yaml
 import argparse
+import logging.config
 
 
 from functools import partial
+from logging import getLogger
 from pkg_resources import get_distribution
 from namekox_core.constants import COMMAND_CONFIG_KEY
 from namekox_core.core.loaders import import_dotpath_class
@@ -22,6 +24,9 @@ from namekox_core.constants import LOGGING_CONFIG_KEY, DEFAULT_LOGGING_LEVEL, DE
 
 
 from .subcmd.base import BaseCommand
+
+
+logger = getLogger(__name__)
 
 
 DEFAULT_COMMANDS = [
@@ -59,10 +64,18 @@ def get_cfg_from_yaml(f):
     return data
 
 
+def set_log_from_conf(c):
+    if LOGGING_CONFIG_KEY in c:
+        logging.config.dictConfig(c[LOGGING_CONFIG_KEY])
+    else:
+        logging.basicConfig(level=DEFAULT_LOGGING_LEVEL, format=DEFAULT_LOGGING_FORMAT)
+
+
 def get_cmd_from_conf(c):
+    set_log_from_conf(c)
     cmds = set(c.get(COMMAND_CONFIG_KEY, []))
     cmds.update(DEFAULT_COMMANDS)
-    return [import_dotpath_class(cmd) for cmd in cmds]
+    return [(cmd, import_dotpath_class(cmd)) for cmd in cmds]
 
 
 def setup_args_parser():
@@ -73,12 +86,16 @@ def setup_args_parser():
     config_data = get_cfg_from_yaml(config_file)
     sub_command = get_cmd_from_conf(config_data)
     sub_parsers = parser.add_subparsers()
-    for err, cmd in sub_command:
-        if cmd is None:
-            continue
-        if err is not None:
+    for cls, res in sub_command:
+        err, cmd = res
+        msg = 'load command classes from {} failed, '.format(cls)
+        if err is not None or cmd is None:
+            msg += err
+            logger.warn(msg)
             continue
         if not issubclass(cmd, BaseCommand):
+            msg += 'no subclass of BaseCommand'
+            logger.warn(msg)
             continue
         cmd_parser = sub_parsers.add_parser(
             cmd.name(), help=cmd.__doc__, description=cmd.__doc__)

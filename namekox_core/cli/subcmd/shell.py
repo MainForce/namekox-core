@@ -4,14 +4,12 @@
 
 
 import sys
-import logging
 
 
 from types import ModuleType
 from logging import getLogger
 from namekox_core.constants import CONTEXT_CONFIG_KEY
 from namekox_core.core.loaders import import_dotpath_class
-from namekox_core.constants import DEFAULT_LOGGING_LEVEL, DEFAULT_LOGGING_FORMAT
 
 
 from .base import BaseCommand
@@ -66,11 +64,10 @@ class Shell(BaseCommand):
     def init_context(cls, config):
         module = ModuleType('namekox')
         for ctx_cls_path in config.get(CONTEXT_CONFIG_KEY, []):
-            msg = 'load context objects from {}'
+            msg = 'load context objects from {} failed, '
             logger.debug(msg.format(ctx_cls_path))
             err, ctx_cls = import_dotpath_class(ctx_cls_path)
             log = False
-            msg += 'failed, '
             if err is not None:
                 log = True
                 msg += err
@@ -83,8 +80,6 @@ class Shell(BaseCommand):
 
     @classmethod
     def main(cls, args, config=None):
-        logging.basicConfig(level=DEFAULT_LOGGING_LEVEL, format=DEFAULT_LOGGING_FORMAT)
-        
         banner = 'Namekox Python {} shell on {}'.format(sys.version, sys.platform)
         runner = ShellRunner(banner, {'nx': cls.init_context(config)})
         runner.start_shell(shell=args.shell)

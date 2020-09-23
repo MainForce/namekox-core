@@ -9,7 +9,6 @@ import inspect
 from logging import getLogger
 from functools import partial
 from types import FunctionType
-from eventlet.event import Event
 
 
 from .extension import Extension
@@ -49,23 +48,6 @@ class Entrypoint(Extension):
 
 
 class EntrypointProvider(Extension):
-    def __init__(self, *args, **kwargs):
-        super(EntrypointProvider, self).__init__(*args, **kwargs)
-        self.entrypoints = set()
-        self.entrypoints_reg = False
-        self.entrypoints_all_stopped_event = Event()
-    
-    def register_entrypoint(self, e):
-        self.entrypoints.add(e)
-        self.entrypoints_reg = True
-    
-    def wait_entrypoints_stop(self):
-        self.entrypoints_reg and self.entrypoints_all_stopped_event.wait()
-
-    def unregister_entrypoint(self, e):
-        self.entrypoints.discard(e)
-        not self.entrypoints and self.entrypoints_all_stopped_event.send(None)
-
     def bind_sub_providers(self, obj, container):
         providers = inspect.getmembers(self, is_entrypoint_provider)
         for name, provider in providers:
@@ -83,6 +65,10 @@ def is_entrypoint_provider(obj):
 
 def ls_entrypoint_provider(obj):
     for name, provider in inspect.getmembers(obj, is_entrypoint_provider):
-        for name, sub_provider in ls_entrypoint_provider(provider):
-            yield sub_provider.bind(obj.container, name)
-        yield provider.bind(obj.container, name)
+        for sub_name, sub_provider in ls_entrypoint_provider(provider):
+            sub_provider_obj = sub_provider.bind(obj.container, sub_name)
+            setattr(provider, sub_name, sub_provider_obj)
+            yield sub_provider_obj
+        provider_obj = provider.bind(obj.container, name)
+        setattr(obj, name, provider_obj)
+        yield provider_obj

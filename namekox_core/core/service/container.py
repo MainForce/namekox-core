@@ -16,7 +16,7 @@ from namekox_core.core.loaders import import_dotpath_class
 from namekox_core.constants import SERVICE_CONFIG_KEY, WORKERS_CONFIG_KEY, DEFAULT_WORKERS_NUMBER
 
 
-from .context import Context
+from .context import WorkerContext
 from .discovery import is_entrypoint
 from .entrypoint import ls_entrypoint_provider
 from .dependency import is_dependency, ls_dependency_provider
@@ -47,10 +47,13 @@ class ServiceContainer(object):
 
         for attr_name, dependency in inspect.getmembers(self.service_cls, is_dependency):
             dependency = dependency.bind(self, attr_name)
+            # inject dependency providers to service class
+            setattr(self.service_cls, dependency.attr_name, dependency)
             self.dependencies.add(dependency)
             self.dependencies.update(ls_dependency_provider(dependency))
         for method_name, func in inspect.getmembers(self.service_cls, is_entrypoint):
             entrypoints = getattr(func, 'entrypoints', set())
+            # inject entrypoint providers to service method
             entrypoints = [entrypoint.bind(self, method_name) for entrypoint in entrypoints]
             [self.entrypoints.add(entrypoint) for entrypoint in entrypoints]
             entrypoints = [ls_entrypoint_provider(entrypoint) for entrypoint in entrypoints]
@@ -168,10 +171,21 @@ class ServiceContainer(object):
         self.manage_threads[gt] = tid
         gt.link(self._link_manage_results, tid)
         return gt
-    
-    def start_worker_thread(self, context, res_handler=None):
+
+    def _start_worker_setup(self, context):
         for provider in self.dependencies:
             provider.worker_setup(context)
+
+    def _start_worker_result(self, context, result, exc_info):
+        for provider in self.dependencies:
+            provider.worker_result(context, result, exc_info)
+
+    def _start_worker_teardown(self, context):
+        for provider in self.dependencies:
+            provider.worker_teardown(context)
+
+    def start_worker_thread(self, context, res_handler=None):
+        self._start_worker_setup(context)
         result = exc_info = None
         method_name = context.entrypoint.method_name
         method = getattr(context.service, method_name)
@@ -181,10 +195,8 @@ class ServiceContainer(object):
             exc_info = sys.exc_info()
         if res_handler is not None:
             result, exc_info = res_handler(context, result, exc_info)
-        for provider in self.dependencies:
-            provider.worker_result(context, result, exc_info)
-        for provider in self.dependencies:
-            provider.worker_teardown(context)
+        self._start_worker_result(context, result, exc_info)
+        self._start_worker_teardown(context)
         del exc_info
 
     def spawn_worker_thread(self, entrypoint, args, kwargs, ctx_data=None, res_handler=None):
@@ -193,7 +205,7 @@ class ServiceContainer(object):
             logger.debug(msg)
             return
         service = self.service_cls()
-        context = Context(service, entrypoint, args, kwargs, context=ctx_data)
+        context = WorkerContext(service, entrypoint, args, kwargs, context=ctx_data)
         msg = 'spawn worker thread handle {}:{}(args={}, kwargs={}, context={})'.format(
             self.service_cls.name, entrypoint.method_name, args, kwargs, ctx_data
         )

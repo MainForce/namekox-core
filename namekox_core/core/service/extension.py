@@ -6,6 +6,9 @@
 import weakref
 
 
+from eventlet.event import Event
+
+
 class Extension(object):
     _params = None
     obj_name = None
@@ -52,3 +55,35 @@ class Extension(object):
     def __repr__(self):
         name = '{}.{}'.format(self.__class__.__module__, self.__class__.__name__)
         return '{}:{}:{}'.format(self.container.service_cls.name, name, self.obj_name)
+
+
+class SharedExtension(object):
+    @property
+    def _key(self):
+        return self.__class__.__name__
+
+    def bind(self, container, name):
+        ins = container.shared_providers.get(self._key, None)
+        if ins is None:
+            ins = super(SharedExtension, self).bind(container, name)
+            container.shared_providers[self._key] = ins
+        return ins
+
+
+class ControlExtension(object):
+    def __init__(self, *args, **kwargs):
+        super(ControlExtension, self).__init__(*args, **kwargs)
+        self.extensions = set()
+        self.extensions_reg = False
+        self.extensions_all_stopped_event = Event()
+
+    def register_extension(self, e):
+        self.extensions.add(e)
+        self.extensions_reg = True
+
+    def wait_extension_stop(self):
+        self.extensions_reg and self.extensions_all_stopped_event.wait()
+
+    def unregister_extension(self, e):
+        self.extensions.discard(e)
+        not self.extensions and self.extensions_all_stopped_event.send(None)
