@@ -38,6 +38,16 @@ def as_singleton_cls(cls):
     return wrapper
 
 
+class AsLazyProperty(object):
+    def __init__(self, func):
+        self.func = func
+
+    def __get__(self, instance, owner):
+        data = self.func(instance)
+        setattr(instance, self.func.__name__, data)
+        return data
+
+
 def as_wraps_partial(func, *init_args, **init_kwargs):
     @wraps(func)
     def wrapper(*part_args, **part_kwargs):
