@@ -53,7 +53,7 @@ class Run(BaseCommand):
     @classmethod
     def init_parser(cls, parser, config=None):
         parser.add_argument('services', nargs='+', metavar='module[:service class]',
-                            help='One or more dot path service classes to run')
+                            help='one or more dot path service classes to run')
         return parser
 
     @classmethod

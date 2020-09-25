@@ -57,7 +57,7 @@ class Shell(BaseCommand):
     def init_parser(cls, parser, config=None):
         parser.add_argument('-s', '--shell', action='store',
                             choices=ShellRunner.shells,
-                            help='Specify an interactive shell')
+                            help='specify an interactive shell')
         return parser
 
     @classmethod
