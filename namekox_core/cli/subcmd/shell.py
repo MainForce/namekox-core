@@ -65,7 +65,6 @@ class Shell(BaseCommand):
         module = ModuleType('namekox')
         for ctx_cls_path in config.get(CONTEXT_CONFIG_KEY, []):
             msg = 'load context objects from {} failed, '
-            logger.debug(msg.format(ctx_cls_path))
             err, ctx_cls = import_dotpath_class(ctx_cls_path)
             log = False
             if err is not None:
