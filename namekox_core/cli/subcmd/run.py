@@ -64,7 +64,6 @@ class Run(BaseCommand):
         services = []
         for path in args.services:
             msg = 'load service classes from {} failed, '
-            logger.debug(msg.format(path))
             err, srvs = find_services(path)
             log = False
             if err is not None:
