@@ -3,8 +3,7 @@
 # author: forcemain@163.com
 
 
-import os
-import uuid
+from namekox_core.core.generator import generator_uuid
 
 
 class BaseContext(object):
@@ -26,7 +25,7 @@ class BaseContext(object):
     @property
     def call_id(self):
         if self._call_id is None:
-            self._call_id = str(uuid.UUID(bytes=os.urandom(16), version=4))
+            self._call_id = generator_uuid()
         return self._call_id
 
     @property

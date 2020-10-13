@@ -26,6 +26,9 @@ class Dependency(Extension):
             setattr(obj, name, provider.bind(container, name))
         return obj
 
+    def get_instance(self, context):
+        return self
+
     def worker_setup(self, context):
         pass
 

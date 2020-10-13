@@ -172,6 +172,11 @@ class ServiceContainer(object):
         gt.link(self._link_manage_results, tid)
         return gt
 
+    def _start_inject_context(self, context):
+        for provider in self.dependencies:
+            instance = provider.get_instance(context)
+            setattr(context.service, provider.attr_name, instance)
+
     def _start_worker_setup(self, context):
         for provider in self.dependencies:
             provider.worker_setup(context)
@@ -185,6 +190,7 @@ class ServiceContainer(object):
             provider.worker_teardown(context)
 
     def start_worker_thread(self, context, res_handler=None):
+        self._start_inject_context(context)
         self._start_worker_setup(context)
         result = exc_info = None
         method_name = context.entrypoint.method_name
