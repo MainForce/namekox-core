@@ -6,6 +6,10 @@
 import logging
 
 
+HUB_ERR_CONFIG_KEY = 'HUB_ERR'
+DEFAULT_HUB_ERR_PRINT = False
+
+
 CONTEXT_CONFIG_KEY = 'CONTEXT'
 
 

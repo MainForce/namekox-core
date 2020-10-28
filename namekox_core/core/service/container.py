@@ -6,6 +6,7 @@
 import sys
 import inspect
 import eventlet
+import traceback
 
 
 from eventlet import Event
@@ -199,6 +200,7 @@ class ServiceContainer(object):
             result = method(*context.args, **context.kwargs)
         except Exception:
             exc_info = sys.exc_info()
+            logger.error(traceback.format_exc())
         if res_handler is not None:
             result, exc_info = res_handler(context, result, exc_info)
         self._start_worker_result(context, result, exc_info)

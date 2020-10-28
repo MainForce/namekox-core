@@ -17,15 +17,16 @@ class SpawningProxySet(set):
     def __repr__(self):
         return '{}'.format(list(self))
 
+
 class SpawningProxy(object):
     def __init__(self, items=None):
         self.items = items
 
     def __str__(self):
-        return '{}'.format(list(self))
+        return '{}'.format(list(self.items))
     
     def __repr__(self):
-        return '{}'.format(list(self))
+        return '{}'.format(list(self.items))
 
     def __getattr__(self, name):
         def spawning_method(*args, **kwargs):

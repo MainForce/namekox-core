@@ -3,40 +3,46 @@
 # author: forcemain@163.com
 
 
+import six
 import inspect
-
-
-reg_exc_map = {}
 
 
 def gen_exc_dotpath(exc):
     m = inspect.getmodule(exc)
-    return '{}.{}'.format(m.__name__, exc.__class__.__name__)
+    if m is None:
+        dotpath = exc.__class__.__name__
+    else:
+        dotpath = '{}.{}'.format(
+            m.__name__,
+            exc.__class__.__name__
+        )
+    return dotpath
 
 
-def reg_exc_dotpath(exc):
-    p = gen_exc_dotpath(exc)
-    reg_exc_map[p] = exc
-    return exc
+def set_exc_to_repr(arg):
+    return arg if isinstance(arg, six.string_types) else repr(arg)
 
 
 def gen_exc_to_data(exc):
     return {
         'exc_type': exc.__class__.__name__,
         'exc_path': gen_exc_dotpath(exc),
-        'exc_args': exc.args,
-        'exc_mesg': exc.message
+        'exc_args': [set_exc_to_repr(arg) for arg in exc.args],
+        'exc_mesg': set_exc_to_repr(exc.message)
     }
 
 
 def gen_data_to_exc(data):
-    pass
+    exc_type = data['exc_type']
+    exc_mesg = data['exc_mesg']
+    return RemoteError(exc_type, exc_mesg)
 
 
-@reg_exc_dotpath
 class RemoteError(Exception):
     def __init__(self, exc_type, exc_mesg):
+        exc_mesg = exc_mesg.replace(self.__class__.__name__, '')
+        exc_mesg = exc_mesg.strip()
         self.exc_type = exc_type
         self.exc_mesg = exc_mesg
-        message = '{} {}'.format(self.exc_type.__name__, self.exc_mesg)
+        message = '{} {}'.format(self.exc_type, self.exc_mesg)
         super(RemoteError, self).__init__(message)

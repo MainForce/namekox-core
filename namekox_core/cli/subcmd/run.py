@@ -15,6 +15,7 @@ from logging import getLogger
 from namekox_core.core.friendly import as_wraps_partial
 from namekox_core.core.service.runner import ServiceRunner
 from namekox_core.core.service.discovery import find_services
+from namekox_core.constants import HUB_ERR_CONFIG_KEY, DEFAULT_HUB_ERR_PRINT
 
 
 from .base import BaseCommand
@@ -57,9 +58,14 @@ class Run(BaseCommand):
         return parser
 
     @classmethod
+    def print_hub_err(cls, config):
+        return config.get(HUB_ERR_CONFIG_KEY, DEFAULT_HUB_ERR_PRINT) or DEFAULT_HUB_ERR_PRINT
+
+    @classmethod
     def main(cls, args, config=None):
         eventlet.monkey_patch()
-        eventlet.debug.hub_exceptions(True)
+        hub_debug_mode = cls.print_hub_err(config)
+        eventlet.debug.hub_exceptions(hub_debug_mode)
         eventlet.debug.hub_prevent_multiple_readers(False)
         services = []
         for path in args.services:
