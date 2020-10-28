@@ -3,6 +3,7 @@
 # author: forcemain@163.com
 
 
+import os
 import sys
 import inspect
 import eventlet
@@ -198,9 +199,10 @@ class ServiceContainer(object):
         method = getattr(context.service, method_name)
         try:
             result = method(*context.args, **context.kwargs)
-        except Exception:
+        except Exception as e:
             exc_info = sys.exc_info()
-            logger.error(traceback.format_exc())
+            exc_mesg = os.linesep.join([e.message, traceback.format_exc()])
+            logger.error(exc_mesg)
         if res_handler is not None:
             result, exc_info = res_handler(context, result, exc_info)
         self._start_worker_result(context, result, exc_info)
