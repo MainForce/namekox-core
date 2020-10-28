@@ -201,7 +201,8 @@ class ServiceContainer(object):
             result = method(*context.args, **context.kwargs)
         except Exception as e:
             exc_info = sys.exc_info()
-            exc_mesg = os.linesep.join([e.message, traceback.format_exc()])
+            exc_mesg = traceback.format_exc().strip()
+            exc_mesg = os.linesep.join([e.message, exc_mesg])
             logger.error(exc_mesg)
         if res_handler is not None:
             result, exc_info = res_handler(context, result, exc_info)
