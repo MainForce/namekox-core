@@ -1,4 +1,9 @@
+# Install
 sudo python setup.py install
-sudo pip install twine
+sudo rm -rf namekox_core.egg-info build dist
+
+# Upload
+sudo pip install -U setuptools wheel twine
+sudo python setup.py sdist bdist_wheel
 sudo twine upload dist/*
 sudo rm -rf namekox_core.egg-info build dist
