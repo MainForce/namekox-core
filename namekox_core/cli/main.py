@@ -33,6 +33,7 @@ DEFAULT_COMMANDS = [
     'namekox_core.cli.subcmd.run:Run',
     'namekox_core.cli.subcmd.shell:Shell',
     'namekox_core.cli.subcmd.config:Config',
+    'namekox_core.cli.subcmd.create:Create',
 ]
 
 

@@ -26,3 +26,7 @@ DEFAULT_WORKERS_NUMBER = 10
 LOGGING_CONFIG_KEY = 'LOGGING'
 DEFAULT_LOGGING_LEVEL = logging.DEBUG
 DEFAULT_LOGGING_FORMAT = '%(asctime)s %(levelname)s %(message)s'
+
+
+TPLREPO_CONFIG_KEY = 'TPLREPO'
+DEFAULT_TPLREPO_URL = 'https://github.com/namekox-org/service-template.git'
