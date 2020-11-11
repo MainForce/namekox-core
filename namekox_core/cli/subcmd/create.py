@@ -3,6 +3,10 @@
 # author: forcemain@163.com
 
 
+import os
+import shutil
+
+
 from logging import getLogger
 from namekox_core.constants import TPLREPO_CONFIG_KEY, DEFAULT_TPLREPO_URL
 
@@ -33,5 +37,6 @@ class Create(BaseCommand):
             msg = 'starting git clone from {} to {}'
             logger.debug(msg)
             Repo.clone_from(repourl, name, branch='master')
+            shutil.rmtree(os.path.join(name, '.git'), ignore_errors=True)
         msg = 'micro services {} created'.format(args.services)
         logger.debug(msg)
