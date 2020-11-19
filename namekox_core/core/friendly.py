@@ -19,8 +19,7 @@ def ignore_exception(func, exc_func=None, expected_exceptions=(Exception,)):
             exc_func = wrapper.exc_func
             if callable(exc_func):
                 exc_info = sys.exc_info()
-                exc_func = as_wraps_partial(exc_func, exc_info)
-                ignore_exception(exc_func)
+                ignore_exception(exc_func)(exc_info)
         return result
     wrapper.exc_func = exc_func
     return wrapper
@@ -71,8 +70,7 @@ def auto_sleep_retry(func, exc_func=None, expected_exceptions=(Exception,), max_
         except expected_exceptions:
             if callable(exc_func):
                 exc_info = sys.exc_info()
-                exc_func = as_wraps_partial(exc_func, exc_info)
-                ignore_exception(exc_func)
+                ignore_exception(exc_func)(exc_info)
         sleep = time_sleep or pow(2, count)
         time.sleep(sleep)
         count += 1
