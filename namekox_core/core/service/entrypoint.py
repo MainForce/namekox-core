@@ -18,6 +18,7 @@ logger = getLogger(__name__)
 
 
 class Entrypoint(Extension):
+    method = None
     method_name = None
 
     def __init__(self, *args, **kwargs):
@@ -37,6 +38,7 @@ class Entrypoint(Extension):
     @classmethod
     def decorator(cls, *args, **kwargs):
         def register_entrypoint(cls_args, cls_kwargs, func):
+            cls.method = func
             entrypoint = cls(*cls_args, **cls_kwargs)
             entrypoints = getattr(func, 'entrypoints', set())
             entrypoints.add(entrypoint)
