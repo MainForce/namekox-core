@@ -15,14 +15,14 @@ readme = open(os.path.join(curdir, 'README.md'), 'rb', 'utf-8').read()
 
 setup(
     name='namekox-core',
-    version='0.0.8',
+    version='0.0.9',
     description='namekox core',
     long_description=readme,
     long_description_content_type='text/markdown',
     author='forcemain',
     url='https://forcemain.github.io/',
     packages=find_packages(exclude=['test', 'test.*']),
-    install_requires=["eventlet>=0.27.0", "gitpython>=2.1.15", "PyYAML>=5.3.1", "six>=1.15.0"],
+    install_requires=["eventlet>=0.27.0", "gitpython>=2.1.15", "PyYAML>=5.3.1", "six>=1.15.0", "pytz>=2018.5"],
     entry_points={'console_scripts': ['namekox=namekox_core.cli.main:main']},
     zip_safe=True,
     license='Apache License, Version 2.0',
