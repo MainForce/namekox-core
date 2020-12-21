@@ -34,15 +34,6 @@ def gen_exc_to_data(exc):
 
 def gen_data_to_exc(data):
     exc_type = data['exc_type']
+    exc_klss = type(exc_type, (Exception,), {})
     exc_mesg = data['exc_mesg']
-    return RemoteError(exc_type, exc_mesg)
-
-
-class RemoteError(Exception):
-    def __init__(self, exc_type, exc_mesg):
-        exc_mesg = exc_mesg.replace(self.__class__.__name__, '')
-        exc_mesg = exc_mesg.strip()
-        self.exc_type = exc_type
-        self.exc_mesg = exc_mesg
-        message = '{} {}'.format(self.exc_type, self.exc_mesg)
-        super(RemoteError, self).__init__(message)
+    return exc_klss(exc_mesg)

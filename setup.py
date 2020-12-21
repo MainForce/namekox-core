@@ -15,7 +15,7 @@ readme = open(os.path.join(curdir, 'README.md'), 'rb', 'utf-8').read()
 
 setup(
     name='namekox-core',
-    version='0.0.9',
+    version='0.0.10',
     description='namekox core',
     long_description=readme,
     long_description_content_type='text/markdown',
