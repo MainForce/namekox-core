@@ -5,7 +5,17 @@
 
 import os
 import uuid
+import socket
 import hashlib
+import contextlib
+
+
+def generator_port():
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    with contextlib.closing(s) as sock:
+        sock.bind(('', 0))
+        _, port = sock.getsockname()
+    return int(port)
 
 
 def generator_md5(data):
