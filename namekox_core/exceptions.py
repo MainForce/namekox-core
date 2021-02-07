@@ -34,6 +34,8 @@ def gen_exc_to_data(exc):
 
 def gen_data_to_exc(data):
     exc_type = data['exc_type']
+    # fix type() argument 1 must be string, not unicode
+    exc_type = str(exc_type)
     exc_klss = type(exc_type, (Exception,), {})
     exc_mesg = data['exc_mesg']
     return exc_klss(exc_mesg)
