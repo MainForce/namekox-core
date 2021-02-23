@@ -1,9 +1,9 @@
 #! -*- coding: utf-8 -*-
-
+#
 # author: forcemain@163.com
 
-
 from __future__ import print_function
+from __future__ import unicode_literals
 
 
 import signal
