@@ -64,7 +64,9 @@ class Shell(BaseCommand):
 
     @classmethod
     def init_context(cls, config):
-        module = ModuleType('namekox')
+        # fix TypeError: module.__init__() argument 1 must be string, not unicode
+        mdname = str('namekox')
+        module = ModuleType(mdname)
         for ctx_cls_path in config.get(CONTEXT_CONFIG_KEY, []):
             msg = 'load context objects from {} failed, '
             err, ctx_cls = import_dotpath_class(ctx_cls_path)
