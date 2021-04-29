@@ -162,6 +162,9 @@ class ServiceContainer(object):
         self.manage_threads.pop(gt, None)
 
     def spawn_manage_thread(self, fn, args=None, kwargs=None, tid=None):
+        logger.debug('!' * 100)
+        logger.debug('manage GreenPool size={} and free={}'.format(len(self.manage_threads), '?'))
+        logger.debug('!' * 100)
         if self.being_kill:
             msg = 'spawn manage thread prevented due to container being killed'
             logger.debug(msg)
@@ -213,6 +216,9 @@ class ServiceContainer(object):
         del exc_info
 
     def spawn_worker_thread(self, entrypoint, args, kwargs, ctx_data=None, res_handler=None):
+        logger.debug('!' * 100)
+        logger.debug('worker GreenPool size={} and free={}'.format(self.worker_pool.size, self.worker_pool.free()))
+        logger.debug('!' * 100)
         if self.being_kill:
             msg = 'spawn worker thread prevented due to container being killed'
             logger.debug(msg)
